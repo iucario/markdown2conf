@@ -1,0 +1,25 @@
+{
+  "name": "markdown2conf",
+  "version": "1.0.1",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "test": "vitest run --silent"
+  },
+  "bin": {
+    "mdconf": "./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "front-matter": "^4.0.2",
+    "marked": "^16.2.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}
