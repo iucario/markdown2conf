@@ -33,7 +33,7 @@ const confluenceRenderer = {
     return `${text}\n\n`
   },
 
-  list(body, ordered, depth = 1) {
+  list(body, depth = 1) {
     if (typeof body === 'object' && body.items) {
       let isOrdered = !!body.ordered
       let result = body.items
@@ -47,14 +47,34 @@ const confluenceRenderer = {
 
   listitem(item, ordered, depth) {
     const marker = ordered ? '#'.repeat(depth) : '*'.repeat(depth)
-    let result = `${marker} ${item.text.split('\n')[0]}`
+    let result = marker + ' '
+
     if (item.tokens) {
       for (const token of item.tokens) {
         if (token.type === 'list') {
-          result += '\n' + this.list(token, token.ordered, depth + 1).trim()
+          // Nested list
+          result += '\n' + this.list(token, depth + 1).trim()
+        } else if (
+          token.type === 'code' ||
+          token.type === 'blockquote' ||
+          token.type === 'table'
+        ) {
+          // Block-level tokens: use parser
+          result += '\n' + this.parser.parse([token])
+        } else if (token.tokens) {
+          // Inline tokens: use parseInline
+          result += this.parser.parseInline(token.tokens)
+        } else if (token.type && this[token.type]) {
+          result += this[token.type](token)
+        } else if ('text' in token) {
+          result += token.text
         }
       }
+    } else if (item.text) {
+      // Fallback for plain text
+      result += this.parser.parseInline([{ type: 'text', text: item.text }])
     }
+
     return result + '\n'
   },
 
@@ -89,9 +109,9 @@ const confluenceRenderer = {
       const title =
         calloutMatch[2]?.trim() || type.charAt(0).toUpperCase() + type.slice(1)
       const content = calloutMatch[3].trim()
-      return `{${type}:title=${title}}\n${content}\n{${type}}\n\n`
+      return `{${type}:title=${title}}\n${content}\n{${type}}\n`
     }
-    return `{quote}\n${text}\n{quote}\n\n`
+    return `{quote}\n${text}\n{quote}\n`
   },
 
   table({ header, rows }) {
@@ -223,57 +243,7 @@ async function convertToConfluence(markdown, options = {}) {
 async function extractFrontMatter(markdown) {
   // Use front-matter to extract attributes
   const { attributes } = fm(markdown)
-  return Object.keys(attributes).length ? attributes : null
-}
-
-// CLI
-async function main() {
-  const args = process.argv.slice(2)
-
-  if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
-    console.log(`
-Markdown to Confluence Converter
-
-Usage:
-  mdconf <input.md> [output.confluence]
-  mdconf --frontmatter <input.md>     # Extract frontmatter
-  
-Examples:
-  mdconf README.md                    # Output to console
-  mdconf README.md README.confluence  # Save to file
-  mdconf --frontmatter README.md      # Print frontmatter
-  
-Options:
-  -h, --help    Show this help message
-  --frontmatter Extract frontmatter (title, labels)
-`)
-    process.exit(0)
-  }
-
-  try {
-    if (args[0] === '--frontmatter') {
-      const markdown = await fs.readFile(args[1], 'utf-8')
-      const frontmatter = await extractFrontMatter(markdown)
-      console.log(frontmatter)
-      return
-    }
-    const markdown = await fs.readFile(args[0], 'utf-8')
-    const result = await convertToConfluence(markdown, {
-      outputPath: args[1],
-    })
-
-    if (!args[1]) {
-      console.log(result)
-    }
-  } catch (error) {
-    console.error(`${error.message}`)
-    process.exit(1)
-  }
-}
-
-// Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main()
+  return Object.keys(attributes).length ? JSON.stringify(attributes, null, 2) : null
 }
 
 export { convertToConfluence, confluenceRenderer, extractFrontMatter }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { convertToConfluence } from '../index.js'
+import { convertToConfluence } from '../convert.js'
 
 describe('Basic Confluence Markup', () => {
   it('converts bold text', async () => {
@@ -82,7 +82,7 @@ h5. heading 5`)
     const md = '> This is a blockquote.\n> It has two lines.'
     const conf = await convertToConfluence(md)
     expect(conf).toBe(
-      '{quote}\nThis is a blockquote.\nIt has two lines.\n{quote}\n\n'
+      '{quote}\nThis is a blockquote.\nIt has two lines.\n{quote}\n'
     )
   })
 
@@ -121,17 +121,14 @@ h5. heading 5`)
     expect(conf.trim()).toBe(`{info:title=Info}
 Call out
 {info}
-
 {warning:title=Warning}
 Call out
 {warning}
-
 {tip:title=Tip}
 Call out
 
 Multiple lines
 {tip}
-
 {note:title=Note}
 Call out
 {note}`)

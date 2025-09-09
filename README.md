@@ -20,6 +20,7 @@ pnpm install
 Optionally install executable globally as `mdconf`
 
 ```sh
+pnpm build
 pnpm link --global
 ```
 
@@ -36,7 +37,7 @@ If `output` is provided, saves the result to a file. Otherwise, prints to stdout
 ### Extract frontmatter (title, labels)
 
 ```sh
-pnpm dev --frontmatter test/demo.md
+pnpm dev frontmatter test/demo.md
 ```
 
 ```json
@@ -47,6 +48,12 @@ pnpm dev --frontmatter test/demo.md
 ```
 
 Prints the parsed frontmatter as a JSON object.
+
+### Create New Page
+
+```sh
+mdconf create input.md -s '~your.name'
+```
 
 ### Help
 

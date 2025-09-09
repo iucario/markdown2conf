@@ -1,4 +1,4 @@
-import { convertToConfluence } from '../index.js'
+import { convertToConfluence } from '../convert.js'
 import { expect, it, describe } from 'vitest'
 
 describe('Nested lists', () => {

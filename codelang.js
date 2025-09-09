@@ -3,7 +3,6 @@ const codeLangMap = {
   actionscript3: 'actionscript3',
   bash: 'bash',
   sh: 'bash',
-  shell: 'bash',
   csharp: 'csharp',
   coldfusion: 'coldfusion',
   cpp: 'cpp',

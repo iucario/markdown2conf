@@ -1,25 +1,30 @@
 {
   "name": "markdown2conf",
-  "version": "1.0.1",
+  "version": "1.2.1",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node index.js",
-    "test": "vitest run --silent"
+    "dev": "tsx index.ts",
+    "test": "vitest run --silent",
+    "build": "tsc",
+    "postbuild": "cp *.js dist/"
   },
   "bin": {
-    "mdconf": "./index.js"
+    "mdconf": "./dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
+    "commander": "^14.0.0",
     "front-matter": "^4.0.2",
     "marked": "^16.2.1"
   },
   "devDependencies": {
+    "@types/node": "^24.3.1",
+    "tsx": "^4.20.5",
     "vitest": "^3.2.4"
   }
 }
