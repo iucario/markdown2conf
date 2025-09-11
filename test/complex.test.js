@@ -7,7 +7,7 @@ describe('Complex Confluence Markup', () => {
 |---|---|---|
 | Markdown | __Simple__ | *Limited features*  |
 | Confluence | Rich \`formatting\` ~~Tables~~ Macros | Proprietary Complex |`
-    const got = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(
       `||Feature||Pros||Cons||
 |Markdown|*Simple*|_Limited features_|
@@ -17,7 +17,7 @@ describe('Complex Confluence Markup', () => {
 
   it('converts mermaid to html macro', async () => {
     const md = '```mermaid\ngraph TD;\nA-->B;\nA-->C;\nB-->D;\nC-->D;\n```'
-    const got = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(
       `{html}
 <pre class="mermaid">\ngraph TD;\nA-->B;\nA-->C;\nB-->D;\nC-->D;\n</pre>
@@ -26,12 +26,10 @@ describe('Complex Confluence Markup', () => {
     )
   })
 
-  it('converts html to html macro', async () => {
+  it('should not convert html', async () => {
     const md = `<div style="color: red;">This is a red div</div>`
-    const got = await convertToConfluence(md)
-    expect(got.trim()).toBe(
-      `{html}<div style="color: red;">This is a red div</div>{html}`
-    )
+    const { markup: got } = await convertToConfluence(md)
+    expect(got.trim()).toBe(`<div style="color: red;">This is a red div</div>`)
   })
 
   it('extracts YAML front matter', async () => {
@@ -51,7 +49,7 @@ labels:
       title: 'Page Title',
       labels: ['test', 'markdown', 'confluence', 'typescript'],
     })
-    const got = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe('h1. heading 1')
   })
 
@@ -62,7 +60,7 @@ labels:
 4. ~~Strikethrough Item~~
 5. Mixed **Bold** and _Italic_ and \`Code\` and ~~Strikethrough~~
 `
-    const got = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(
       `# *Bold Item*
 # _Italic Item_
@@ -87,7 +85,7 @@ function test() {
   console.log("Hello, World!");
 }
 {code}`
-    const got = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(want)
   })
 
@@ -114,7 +112,7 @@ It has multiple lines.
 ||Header 1||Header 2||
 |Cell 1|Cell 2|
 |Cell 3|Cell 4|`
-    const got = await convertToConfluence(md)
-    expect(got.trim()).toBe(want.trim())
+  const { markup: got } = await convertToConfluence(md)
+  expect(got.trim()).toBe(want.trim())
   })
 })

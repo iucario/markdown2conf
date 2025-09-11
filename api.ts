@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-const HOST = '' // Wirte your domain
+const HOST = ''
 
 interface Page {
   id: string
@@ -216,13 +216,11 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
   if (!token) {
     throw new Error('CONFLUENCE_TOKEN is not set')
   }
-
   const fileExtension = filePath.split('.').pop()
   const filename = filePath
     .split('/')
     .pop()
     ?.replace(/[^a-zA-Z0-9.-]/g, '_') // Sanitize filename
-  // Use a random UUID if filename is not available
 
   const fileBuffer = fs.readFileSync(filePath)
   const blob = new Blob([fileBuffer], { type: 'image/png' })
@@ -235,7 +233,7 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
-      'X-Atlassian-Token': 'nocheck',
+      'X-Atlassian-Token': 'nocheck', // Attachment upload requires this header
     },
     body: formData,
   })

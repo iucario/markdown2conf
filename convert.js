@@ -4,6 +4,7 @@ import codeLangMap from './codelang.js'
 import fm from 'front-matter'
 
 let headingAnchors = [] // Collect original headings and use them to generate Confluence anchor links
+let localImages = [] // Collect images
 
 const extractHeadings = (markdown) => {
   let headings = []
@@ -36,9 +37,7 @@ const confluenceRenderer = {
   list(body, depth = 1) {
     if (typeof body === 'object' && body.items) {
       let isOrdered = !!body.ordered
-      let result = body.items
-        .map((item) => this.listitem(item, isOrdered, depth))
-        .join('')
+      let result = body.items.map((item) => this.listitem(item, isOrdered, depth)).join('')
       return result + '\n' // Ensure one newline after the whole list
     }
     let text = String(body).trim()
@@ -54,11 +53,7 @@ const confluenceRenderer = {
         if (token.type === 'list') {
           // Nested list
           result += '\n' + this.list(token, depth + 1).trim()
-        } else if (
-          token.type === 'code' ||
-          token.type === 'blockquote' ||
-          token.type === 'table'
-        ) {
+        } else if (token.type === 'code' || token.type === 'blockquote' || token.type === 'table') {
           // Block-level tokens: use parser
           result += '\n' + this.parser.parse([token])
         } else if (token.tokens) {
@@ -100,16 +95,25 @@ const confluenceRenderer = {
 
   blockquote({ tokens }) {
     const text = this.parser.parse(tokens).trim()
-    // Detect callout syntax: [!type] Title\nContent
-    const calloutMatch = text.match(
-      /^\[!(info|warning|tip|note)]\s*(.+)?\n([\s\S]*)$/
-    )
-    if (calloutMatch) {
-      const type = calloutMatch[1]
-      const title =
-        calloutMatch[2]?.trim() || type.charAt(0).toUpperCase() + type.slice(1)
-      const content = calloutMatch[3].trim()
-      return `{${type}:title=${title}}\n${content}\n{${type}}\n`
+    // Detect callout syntax: [!type] Title\nContent (multi-line)
+    const calloutRegex = /^\[!(info|warning|tip|note)]\s*(.+)?\n([\s\S]*)$/i
+    if (calloutRegex.test(text)) {
+      // Split blockquote into lines for multi-callout support
+      const lines = text.split(/\n(?=> \[!)/)
+      let result = ''
+      for (const line of lines) {
+        const match = line.match(/^\[!(info|warning|tip|note)]\s*(.+)?\n?([\s\S]*)$/i)
+        if (match) {
+          const type = match[1].toLowerCase()
+          const title = match[2]?.trim() || type.charAt(0).toUpperCase() + type.slice(1)
+          const content = match[3].trim()
+          result += `{${type}:title=${title}}\n${content}\n{${type}}\n`
+        } else {
+          // Fallback for unmatched lines
+          result += `{quote}\n${line}\n{quote}\n`
+        }
+      }
+      return result
     }
     return `{quote}\n${text}\n{quote}\n`
   },
@@ -142,8 +146,9 @@ const confluenceRenderer = {
     return '----\n\n'
   },
 
-  html({ text }) {
-    return `{html}${text}{html}\n\n`
+  html({ text, raw }) {
+    // Output HTML tags as normal text, not rendered as HTML
+    return raw || text
   },
 
   // Inline elements
@@ -163,7 +168,10 @@ const confluenceRenderer = {
   },
 
   codespan({ text }) {
-    return `{{${text}}}`
+    let raw = String(text)
+    // Escape dashes and curly braces in all code spans
+    let escaped = raw.replace(/-/g, '\\-').replace(/\{/g, '\\{').replace(/\}/g, '\\}')
+    return `{{${escaped}}}`
   },
 
   link({ href, title, tokens }) {
@@ -201,7 +209,17 @@ const confluenceRenderer = {
   },
 
   image({ href, title, text }) {
-    return `!${href}!`
+    // Only collect local image paths for upload
+    let src = href
+    const isUrl = /^https?:\/\//.test(href)
+    if (!isUrl) {
+      src = src.split('/').pop().split('?')[0]
+      localImages.push(href)
+    }
+    if (text && text.trim()) {
+      return `!${src}|alt=${text.trim()}!`
+    }
+    return `!${src}!`
   },
 
   br() {
@@ -209,10 +227,17 @@ const confluenceRenderer = {
   },
 
   text({ text }) {
-    return text
+    // Escape angle brackets in normal text as well
+    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
   },
 }
 
+/**
+ * Converts markdown to Confluence wiki markup and collects local image paths.
+ * @param {string} markdown - The markdown content to convert.
+ * @param {object} [options] - Optional conversion options.
+ * @returns {Promise<{markup: string, localImages: string[]}>} The Confluence markup and local image paths.
+ */
 async function convertToConfluence(markdown, options = {}) {
   try {
     // Use front-matter to extract body
@@ -227,14 +252,14 @@ async function convertToConfluence(markdown, options = {}) {
     })
     marked.use({ renderer: confluenceRenderer })
     headingAnchors = extractHeadings(body)
-    const result = marked.parse(body)
+    const markup = marked.parse(body)
 
     if (options.outputPath) {
-      await fs.writeFile(options.outputPath, result, 'utf-8')
+      await fs.writeFile(options.outputPath, markup, 'utf-8')
       console.log(`Saved to: ${options.outputPath}`)
     }
 
-    return result
+    return { markup, localImages }
   } catch (error) {
     throw new Error(`Failed to convert: ${error.message}`)
   }
@@ -243,7 +268,7 @@ async function convertToConfluence(markdown, options = {}) {
 async function extractFrontMatter(markdown) {
   // Use front-matter to extract attributes
   const { attributes } = fm(markdown)
-  return Object.keys(attributes).length ? JSON.stringify(attributes, null, 2) : null
+  return Object.keys(attributes).length ? attributes : null
 }
 
 export { convertToConfluence, confluenceRenderer, extractFrontMatter }

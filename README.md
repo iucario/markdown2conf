@@ -5,9 +5,29 @@ Convert Markdown files to Confluence Wiki Markup with CLI and frontmatter extrac
 ## Features
 
 - Converts Markdown to Confluence Wiki Markup
-- Supports tables, code blocks, callouts, links, and more
-- Extracts YAML frontmatter (title, labels) from Markdown files
+- Supports tables, code blocks, callouts, images, mermaid and more
+- Extracts YAML frontmatter (title, labels, id) from Markdown files
 - CLI usage for easy integration
+
+Supported syntax:
+
+- Bold
+- Italic
+- Strike
+- Codespan
+- Code block
+- Mermaid
+  Using HTML and mermaid.js
+- Links
+- Anchor links
+- Image
+  Supports uploading attachments
+- Lists
+  Nested lists
+- Tables
+- Horizontal rules
+- Callouts
+- Quotes
 
 ## Installation
 
@@ -51,8 +71,16 @@ Prints the parsed frontmatter as a JSON object.
 
 ### Create New Page
 
+Creates a page under the space's home page.
+
 ```sh
-mdconf create input.md -s '~your.name'
+mdconf create input.md -s '~your.name' -t 'title'
+```
+
+### Publish Page
+
+```sh
+mdconf publish markdown.md -i <id> -m 'message'
 ```
 
 ### Help
