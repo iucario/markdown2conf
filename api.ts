@@ -1,6 +1,5 @@
-import fs from 'fs'
-
-const HOST = ''
+import fs from 'fs/promises'
+import path from 'path'
 
 interface Page {
   id: string
@@ -22,16 +21,55 @@ interface User {
   avatar: string // version.by.profilePicture.path
 }
 
-async function request(method: string, url: string, body?: any): Promise<any> {
-  const token = process.env.CONFLUENCE_TOKEN
-  if (!token) {
-    throw new Error('CONFLUENCE_TOKEN is not set')
+/**
+ * Loads configuration from ~/.config/mdconf.json
+ */
+async function loadConfig(): Promise<{ confluenceToken: string; host: string }> {
+  const homeDir = process.env.HOME || process.env.USERPROFILE || ''
+  const configDir = path.join(homeDir, '.config')
+  const configPath = path.join(configDir, 'mdconf.json')
+
+  try {
+    const content = await fs.readFile(configPath, 'utf-8')
+    const config = JSON.parse(content)
+    if (!config.confluenceToken) {
+      throw new Error('confluenceToken not found in config file')
+    }
+    if (!config.host) {
+      throw new Error('host not found in config file')
+    }
+    return { confluenceToken: config.confluenceToken, host: config.host }
+  } catch (err) {
+    // If file does not exist, create it with a placeholder
+    if (err.code === 'ENOENT') {
+      await fs.mkdir(configDir, { recursive: true })
+      const defaultConfig = { confluenceToken: '', host: 'https://your-confluence-host.example.com/confluence' }
+      await fs.writeFile(configPath, JSON.stringify(defaultConfig, null, 2), 'utf-8')
+      throw new Error('Config file created at ~/.config/mdconf.json. Please add your confluence token and host.')
+    }
+    throw new Error('Confluence token not found in ~/.config/mdconf.json')
   }
-  const headers = { Authorization: `Bearer ${token}` }
+}
+
+async function request(method: string, endpoint: string, body?: any): Promise<any> {
+  let token = process.env.CONFLUENCE_TOKEN
+  let base = 'localhost'
+  try {
+    const { confluenceToken, host } = await loadConfig()
+    token = token || confluenceToken
+    base = host
+  } catch (err) {
+    console.error(err.message)
+  }
+  if (!token) {
+    throw new Error('Confluence token is missing in both environment and config file')
+  }
+  const headers: Record<string, string> = { Authorization: `Bearer ${token}` }
   if (body) {
     headers['Content-Type'] = 'application/json'
   }
 
+  const url = base.replace(/\/+$/, '') + '/' + endpoint.replace(/^\/+/, '')
   const response = await fetch(url, {
     method,
     headers,
@@ -40,30 +78,15 @@ async function request(method: string, url: string, body?: any): Promise<any> {
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Request failed: ${response.status} ${text}`)
+    throw new Error(`requesting ${url} failed: ${response.status} ${text}`)
   }
 
   return response.json()
 }
 
 async function getPage(pageId: number): Promise<Page> {
-  const api = `${HOST}/rest/api/content/${pageId}?expand=body.storage,version,history,space`
-  const token = process.env.CONFLUENCE_TOKEN
-
-  if (!token) {
-    throw new Error('CONFLUENCE_TOKEN is not set')
-  }
-
-  const response = await fetch(api, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
-  }
-
-  const data = await response.json()
+  const api = `rest/api/content/${pageId}?expand=body.storage,version,history,space`
+  const data = await request('GET', api)
   const page: Page = {
     id: data.id,
     title: data.title,
@@ -88,14 +111,7 @@ async function editPage(
   space: string,
   message: string = ''
 ): Promise<any> {
-  const api = `${HOST}/rest/api/content/${pageId}`
-  const token = process.env.CONFLUENCE_TOKEN
-
-  if (!token) {
-    console.log('No token')
-    throw new Error('CONFLUENCE_TOKEN is not set')
-  }
-
+  const api = `rest/api/content/${pageId}`
   const payload = {
     id: pageId,
     type: 'page',
@@ -115,25 +131,11 @@ async function editPage(
     },
   }
 
-  const response = await fetch(api, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
-  }
-
-  return response.json()
+  return request('PUT', api, payload)
 }
 
 async function homePage(spaceKey: string): Promise<any> {
-  const api = `${HOST}/rest/api/space/${spaceKey}?expand=homepage`
+  const api = `rest/api/space/${spaceKey}?expand=homepage`
   return request('GET', api)
 }
 
@@ -145,7 +147,7 @@ type CreatePageParams = {
 }
 
 async function createPage({ title, storage, space, ancestorId }: CreatePageParams): Promise<any> {
-  const api = `${HOST}/rest/api/content`
+  const api = `rest/api/content`
 
   const payload = {
     type: 'page',
@@ -166,64 +168,33 @@ async function createPage({ title, storage, space, ancestorId }: CreatePageParam
 }
 
 async function markupToStorage(markup: string): Promise<string> {
-  const api = `${HOST}/rest/api/contentbody/convert/storage`
-
-  const response = await fetch(api, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      value: markup,
-      representation: 'wiki',
-    }),
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Request failed ${response.status} ${text}`)
+  const api = `rest/api/contentbody/convert/storage`
+  const body = {
+    value: markup,
+    representation: 'wiki',
   }
-
-  const data = await response.json()
+  const data = await request('POST', api, body)
   return data.value
 }
 
 async function getAttachment(pageId: number): Promise<string[]> {
-  const api = `${HOST}/rest/api/content/${pageId}/child/attachment`
-  const token = process.env.CONFLUENCE_TOKEN
-
-  if (!token) {
-    throw new Error('CONFLUENCE_TOKEN is not set')
-  }
-
-  const response = await fetch(api, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
-  }
-
-  const data = await response.json()
+  const api = `rest/api/content/${pageId}/child/attachment`
+  const data = await request('GET', api)
   return data.results.map((attachment: any) => attachment._links.download)
 }
 
 async function addAttachment(pageId: number, filePath: string, comment: string): Promise<any> {
-  const api = `${HOST}/rest/api/content/${pageId}/child/attachment`
-  const token = process.env.CONFLUENCE_TOKEN
+  const api = `rest/api/content/${pageId}/child/attachment`
+  const { confluenceToken: token } = await loadConfig()
 
-  if (!token) {
-    throw new Error('CONFLUENCE_TOKEN is not set')
-  }
-  const fileExtension = filePath.split('.').pop()
   const filename = filePath
     .split('/')
     .pop()
     ?.replace(/[^a-zA-Z0-9.-]/g, '_') // Sanitize filename
 
-  const fileBuffer = fs.readFileSync(filePath)
-  const blob = new Blob([fileBuffer], { type: 'image/png' })
+  const fileBuffer = await fs.readFile(filePath)
+  const uint8Array = new Uint8Array(fileBuffer)
+  const blob = new Blob([uint8Array], { type: 'image/png' })
 
   const formData = new FormData()
   formData.append('comment', comment)
@@ -237,13 +208,56 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
     },
     body: formData,
   })
-
   if (!response.ok) {
     const text = await response.text()
     throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
   }
-
   return response.json()
 }
 
-export { Page, User, getPage, editPage, createPage, markupToStorage, getAttachment, addAttachment, homePage }
+async function postLabels(pageId: number, labels: string[]): Promise<any> {
+  const api = `rest/api/content/${pageId}/label`
+  const body = labels.map((label) => ({ prefix: 'global', name: label }))
+  return request('POST', api, body)
+}
+
+async function listLabels(pageId: number): Promise<string[]> {
+  const api = `rest/api/content/${pageId}/label`
+  const data = await request('GET', api)
+  return data.results.map((label: any) => label.name)
+}
+
+async function deleteLabel(pageId: number, label: string): Promise<any> {
+  const api = `rest/api/content/${pageId}/label/${label}`
+  return request('DELETE', api)
+}
+
+/**
+ * Synchronize labels on a Confluence page.
+ * Add new labels and remove labels that are not provided.
+ */
+async function syncLabels(pageId: number, labels: string[]): Promise<void> {
+  const existingLabels = await listLabels(pageId)
+  const toAdd = labels.filter((label) => !existingLabels.includes(label))
+  const toRemove = existingLabels.filter((label) => !labels.includes(label))
+
+  if (toAdd.length > 0) {
+    await postLabels(pageId, toAdd)
+  }
+  for (const label of toRemove) {
+    await deleteLabel(pageId, label)
+  }
+}
+
+export {
+  addAttachment,
+  createPage,
+  editPage,
+  getAttachment,
+  getPage,
+  homePage,
+  markupToStorage,
+  Page,
+  syncLabels,
+  User,
+}

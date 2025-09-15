@@ -1,10 +1,10 @@
 import { Command } from 'commander'
 import fs from 'fs/promises'
 import path from 'path'
-import { addAttachment, createPage, editPage, getPage, homePage, markupToStorage } from './api.js'
+import { addAttachment, createPage, editPage, getPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 
-const VERSION = '1.4.4'
+const VERSION = '1.4.6'
 
 function inferPageId(srcFile: string): number {
   const pattern = /(\d{9,})/
@@ -77,8 +77,9 @@ async function main() {
             if (isNaN(pageIdNum) || pageIdNum <= 0) {
               throw new Error(`Invalid or missing page ID ${options.id || attrs.id}`)
             }
+            const labels = attrs.labels || []
             const { storage, localImages } = await mdToStorage(filePath, {})
-            await updateConfluencePage(pageIdNum, storage, message)
+            await updateConfluencePage(pageIdNum, storage, message, labels)
             if (options.attachment && localImages.length > 0) {
               const relativeImagePaths = relativePaths(filePath, localImages)
               upploadImages(pageIdNum, relativeImagePaths)
@@ -112,6 +113,10 @@ async function main() {
           const relativeImagePaths = relativePaths(filePath, localImages)
           upploadImages(result.id, relativeImagePaths)
         }
+        const attrs = await extractFrontMatter(await fs.readFile(filePath, 'utf-8'))
+        if (attrs.labels && attrs.labels.length > 0) {
+          syncLabels(result.id, attrs.labels)
+        }
       } catch (error) {
         console.error(`${error.message}`)
         process.exit(1)
@@ -126,8 +131,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main()
 }
 
-async function updateConfluencePage(pageIdNum: number, storage: string, message: string) {
+async function updateConfluencePage(pageIdNum: number, storage: string, message: string, labels: string[] = []) {
   const page = await getPage(pageIdNum)
+  if (labels.length > 0) {
+    syncLabels(pageIdNum, labels)
+  }
   const result = await editPage(pageIdNum, storage, page.title, page.version + 1, page.space, message)
   console.log(`Published to Confluence: version ${result.version.number}\n${page.tinyui}`)
 }

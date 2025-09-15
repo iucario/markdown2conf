@@ -142,8 +142,26 @@ Call out
   })
 
   it('escapes confluence markup styles in text', async () => {
-    const md = 'This is `abc-not strike-def` text.\n`{var}blahblah{var}`'
-    const want = 'This is {{abc\\-not strike\\-def}} text.\n{{\\{var\\}blahblah\\{var\\}}}'
+    const md = 'This is `abc-not strike-def` text.'
+    const want = 'This is {{abc\\-not strike\\-def}} text.'
+    const { markup: conf } = await convertToConfluence(md)
+    expect(conf.trim()).toBe(want)
+  })
+
+  it('escapes confluence curly braces in code', async () => {
+    const md = `This is {normal} text.
+This is code span \`{var}blahblah{var}\`
+This is code block
+\`\`\`sh
+echo {var}
+\`\`\``
+    const want = `This is {normal} text.
+This is code span {{\\{var\\}blahblah\\{var\\}}}
+This is code block
+
+{code:lang=bash}
+echo {var}
+{code}`
     const { markup: conf } = await convertToConfluence(md)
     expect(conf.trim()).toBe(want)
   })

@@ -29,6 +29,8 @@ New line
 [#Test Lists](#test-lists)
 [#Heading-With Dash](#heading-with-dash)
 
+![Example Alt](./example.jpg)
+
 ## heading 2
 
 ## Test Lists

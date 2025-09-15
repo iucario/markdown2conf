@@ -227,8 +227,7 @@ const confluenceRenderer = {
   },
 
   text({ text }) {
-    // Escape angle brackets in normal text as well
-    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return text
   },
 }
 
