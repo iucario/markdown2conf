@@ -172,4 +172,11 @@ echo {var}
     const { markup: conf } = await convertToConfluence(md)
     expect(conf.trim()).toBe(want)
   })
+
+  it('shuould convert <br> tags to new lines', async () => {
+    const md = 'Line 1<br>Line 2<br/>Line 3<br />Line 4'
+    const want = 'Line 1\nLine 2\nLine 3\nLine 4'
+    const { markup: conf } = await convertToConfluence(md)
+    expect(conf.trim()).toBe(want)
+  })
 })

@@ -81,7 +81,15 @@ async function request(method: string, endpoint: string, body?: any): Promise<an
     throw new Error(`requesting ${url} failed: ${response.status} ${text}`)
   }
 
-  return response.json()
+  const text = await response.text()
+  if (!text) {
+    return null
+  }
+  try {
+    return JSON.parse(text)
+  } catch (err) {
+    throw new Error(`Failed to parse JSON from ${url}: ${err.message}\nRaw response: ${text}`)
+  }
 }
 
 async function getPage(pageId: number): Promise<Page> {
@@ -217,18 +225,18 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
 
 async function postLabels(pageId: number, labels: string[]): Promise<any> {
   const api = `rest/api/content/${pageId}/label`
-  const body = labels.map((label) => ({ prefix: 'global', name: label }))
+  const body = labels.map((label) => ({ prefix: 'global', name: label.toLowerCase() }))
   return request('POST', api, body)
 }
 
 async function listLabels(pageId: number): Promise<string[]> {
   const api = `rest/api/content/${pageId}/label`
   const data = await request('GET', api)
-  return data.results.map((label: any) => label.name)
+  return data.results.map((label: any) => label.name.toLowerCase())
 }
 
 async function deleteLabel(pageId: number, label: string): Promise<any> {
-  const api = `rest/api/content/${pageId}/label/${label}`
+  const api = `rest/api/content/${pageId}/label/${label.toLowerCase()}`
   return request('DELETE', api)
 }
 
@@ -237,9 +245,11 @@ async function deleteLabel(pageId: number, label: string): Promise<any> {
  * Add new labels and remove labels that are not provided.
  */
 async function syncLabels(pageId: number, labels: string[]): Promise<void> {
+  const normalizedLabels = labels.map((label) => label.toLowerCase())
+  const uniqueLabels = Array.from(new Set(normalizedLabels))
   const existingLabels = await listLabels(pageId)
-  const toAdd = labels.filter((label) => !existingLabels.includes(label))
-  const toRemove = existingLabels.filter((label) => !labels.includes(label))
+  const toAdd = uniqueLabels.filter((label) => !existingLabels.includes(label))
+  const toRemove = existingLabels.filter((label) => !uniqueLabels.includes(label))
 
   if (toAdd.length > 0) {
     await postLabels(pageId, toAdd)

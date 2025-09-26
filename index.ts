@@ -4,7 +4,7 @@ import path from 'path'
 import { addAttachment, createPage, editPage, getPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 
-const VERSION = '1.4.6'
+const VERSION = '1.4.8'
 
 function inferPageId(srcFile: string): number {
   const pattern = /(\d{9,})/
@@ -53,6 +53,7 @@ async function main() {
 
   program
     .command('publish <markdown.md>')
+    .alias('pub')
     .option('-i, --id <pageId>', 'Confluence Page ID to update')
     .option('-m, --message <message>', 'Message for the update')
     .option('--markup', 'Input is already in Confluence markup format', false)

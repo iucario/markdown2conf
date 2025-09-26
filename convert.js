@@ -147,6 +147,10 @@ const confluenceRenderer = {
   },
 
   html({ text, raw }) {
+    // Convert <br>, <br/> to newlines
+    if (/^<br\s*\/?>$/i.test(raw?.trim())) {
+      return '\n'
+    }
     // Output HTML tags as normal text, not rendered as HTML
     return raw || text
   },

@@ -1,10 +1,10 @@
 ---
 title: 'Page Title'
 labels:
-  - test
   - markdown
   - confluence
   - typescript
+  - TypeScript
 ---
 
 
