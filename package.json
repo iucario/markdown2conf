@@ -18,6 +18,7 @@
     "CLI"
   ],
   "author": "iucario",
+  "homepage": "https://github.com/iucario/markdown2conf",
   "license": "MIT",
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
