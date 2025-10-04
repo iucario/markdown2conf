@@ -1,6 +1,6 @@
 # Markdown2conf
 
-Convert Markdown files to Confluence Wiki Markup with CLI and frontmatter extraction support.
+Convert Markdown files to Confluence Wiki Markup and publish to Confluence with CLI.
 
 If you encounter any problems or have suggestions, feel free to raise an issue on GitHub.
 

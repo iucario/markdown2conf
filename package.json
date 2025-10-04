@@ -2,7 +2,7 @@
   "name": "markdown2conf",
   "version": "1.4.8",
   "type": "module",
-  "description": "",
+  "description": "Convert Markdown files to Confluence Wiki Markup and publish to Confluence with CLI",
   "main": "index.js",
   "scripts": {
     "dev": "tsx index.ts",
@@ -13,9 +13,13 @@
   "bin": {
     "mdconf": "./dist/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "Confluence",
+    "Markdown",
+    "CLI"
+  ],
+  "author": "iucario",
+  "license": "MIT",
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
     "commander": "^14.0.0",
