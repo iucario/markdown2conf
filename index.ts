@@ -1,10 +1,12 @@
 import { Command } from 'commander'
 import fs from 'fs/promises'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { addAttachment, createPage, editPage, getPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 
-const VERSION = '1.4.8'
+
+const VERSION = '1.4.9'
 
 function inferPageId(srcFile: string): number {
   const pattern = /(\d{9,})/
@@ -128,7 +130,7 @@ async function main() {
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main()
 }
 
