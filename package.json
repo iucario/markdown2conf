@@ -17,6 +17,9 @@
     "Markdown",
     "CLI"
   ],
+  "files": [
+    "dist/"
+  ],
   "author": "iucario",
   "homepage": "https://github.com/iucario/markdown2conf",
   "license": "MIT",
