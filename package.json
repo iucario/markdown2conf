@@ -1,6 +1,6 @@
 {
   "name": "markdown2conf",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "type": "module",
   "description": "Convert Markdown files to Confluence Wiki Markup and publish to Confluence with CLI",
   "main": "index.js",
