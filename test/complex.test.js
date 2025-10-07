@@ -46,6 +46,7 @@ labels:
 `
     const frontmatter = await extractFrontMatter(md)
     expect(frontmatter).toStrictEqual({
+      id: null,
       title: 'Page Title',
       labels: ['test', 'markdown', 'confluence', 'typescript'],
     })

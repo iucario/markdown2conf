@@ -5,8 +5,7 @@ import { createPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 import { inferPageId, mdToStorage, relativePaths, updateConfluencePage, upploadImages } from './main.js'
 
-const VERSION = '1.4.10'
-
+const VERSION = '1.4.11'
 
 async function main() {
   const program = new Command()
@@ -32,7 +31,7 @@ async function main() {
 
   program
     .command('frontmatter <input.md>')
-    .description('Extract frontmatter (title, labels)')
+    .description('Extract frontmatter (id, title, labels)')
     .action(async (input) => {
       try {
         const markdown = await fs.readFile(input, 'utf-8')
@@ -63,7 +62,7 @@ async function main() {
             }
             const markup = await fs.readFile(filePath, 'utf-8')
             const storage = await markupToStorage(markup)
-            await updateConfluencePage(pageIdNum, storage, message)
+            await updateConfluencePage({ pageId: pageIdNum, storage, message })
           } else {
             const markdown = await fs.readFile(filePath, 'utf-8')
             const attrs = await extractFrontMatter(markdown)
@@ -72,8 +71,9 @@ async function main() {
               throw new Error(`Invalid or missing page ID ${options.id || attrs.id}`)
             }
             const labels = attrs.labels || []
-            const { storage, localImages } = await mdToStorage(filePath, {})
-            await updateConfluencePage(pageIdNum, storage, message, labels)
+            const { title, storage, localImages } = await mdToStorage(filePath, {})
+            const newTitle = attrs.title || title || null
+            await updateConfluencePage({ pageId: pageIdNum, storage, message, labels, title: newTitle })
             if (options.attachment && localImages.length > 0) {
               const relativeImagePaths = relativePaths(filePath, localImages)
               upploadImages(pageIdNum, relativeImagePaths)
