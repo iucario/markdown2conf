@@ -5,8 +5,7 @@ import { createPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 import { inferPageId, mdToStorage, relativePaths, updateConfluencePage, upploadImages } from './main.js'
 
-const VERSION = '1.4.10'
-
+const VERSION = '1.4.11'
 
 async function main() {
   const program = new Command()
@@ -32,7 +31,7 @@ async function main() {
 
   program
     .command('frontmatter <input.md>')
-    .description('Extract frontmatter (title, labels)')
+    .description('Extract frontmatter (id, title, labels)')
     .action(async (input) => {
       try {
         const markdown = await fs.readFile(input, 'utf-8')
