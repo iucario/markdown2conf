@@ -269,9 +269,22 @@ async function convertToConfluence(markdown, options = {}) {
 }
 
 async function extractFrontMatter(markdown) {
-  // Use front-matter to extract attributes
   const { attributes } = fm(markdown)
-  return Object.keys(attributes).length ? attributes : null
+
+  if (!Object.keys(attributes).length) {
+    return {
+      title: null,
+      labels: [],
+      id: null,
+    }
+  }
+
+  return {
+    title: attributes.title || null,
+    labels: Array.isArray(attributes.labels) ? attributes.labels : [],
+    id: attributes.id || null,
+    ...attributes,
+  }
 }
 
 export { convertToConfluence, confluenceRenderer, extractFrontMatter }
