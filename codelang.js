@@ -16,6 +16,7 @@ const codeLangMap = {
   javafx: 'javafx',
   javascript: 'javascript',
   js: 'javascript',
+  json: 'JSON',
   perl: 'perl',
   php: 'php',
   powershell: 'powershell',
