@@ -5,7 +5,7 @@ import { createPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 import { inferPageId, mdToStorage, relativePaths, updateConfluencePage, upploadImages } from './main.js'
 
-const VERSION = '1.4.11'
+const VERSION = '1.4.12-rc.1'
 
 async function main() {
   const program = new Command()
