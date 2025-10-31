@@ -78,14 +78,16 @@ labels:
     function test() {
       console.log("Hello, World!");
     }
-    \`\`\``
+    \`\`\`
+3. Item after code block`
     const want = `# Item with inline code {{inlineCode()}}
 # Item with code blockquote
 {code:lang=javascript}
 function test() {
   console.log("Hello, World!");
 }
-{code}`
+{code}
+# Item after code block`
     const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(want)
   })
@@ -108,7 +110,6 @@ This is a blockquote inside a list item.
 
 It has multiple lines.
 {quote}
-
 # Item with table
 ||Header 1||Header 2||
 |Cell 1|Cell 2|

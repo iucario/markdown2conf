@@ -55,7 +55,7 @@ const confluenceRenderer = {
           result += '\n' + this.list(token, depth + 1).trim()
         } else if (token.type === 'code' || token.type === 'blockquote' || token.type === 'table') {
           // Block-level tokens: use parser
-          result += '\n' + this.parser.parse([token])
+          result += '\n' + this.parser.parse([token]).trimEnd()
         } else if (token.tokens) {
           // Inline tokens: use parseInline
           result += this.parser.parseInline(token.tokens)

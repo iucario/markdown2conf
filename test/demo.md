@@ -106,3 +106,12 @@ DAG1 --> DAG2
 ###### Heading 6
 
 ### Heading-With Dash
+
+1. Ordered list 1
+2. Code block inside list
+
+    ```sh
+    echo 'hello'
+    ```
+
+3. List after code
