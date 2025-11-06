@@ -193,11 +193,10 @@ async function getAttachment(pageId: number): Promise<string[]> {
 
 async function addAttachment(pageId: number, filePath: string, comment: string): Promise<any> {
   const { confluenceToken: token, host } = await loadConfig()
-  const filename = encodeURIComponent(path.basename(filePath))
+  const filename = path.basename(filePath)
   const fileBuffer = await fs.readFile(filePath)
   const uint8Array = new Uint8Array(fileBuffer)
   const blob = new Blob([uint8Array], { type: 'image/png' })
-
   const formData = new FormData()
   formData.append('comment', comment)
   formData.append('file', blob, filename)
