@@ -13,22 +13,22 @@ function inferPageId(srcFile: string): number {
 }
 
 interface UpdatePageParams {
-  pageId: number
-  storage: string
-  message: string
-  labels?: string[]
-  title?: string
+    pageId: number
+    storage: string
+    message: string
+    labels?: string[]
+    title?: string
 }
 
 async function updateConfluencePage(params: UpdatePageParams) {
-  const { pageId, storage, message, title, labels = [] } = params
-  const page = await getPage(pageId)
-  if (labels.length > 0) {
-    syncLabels(pageId, labels)
-  }
-  const pageTitle = title || page.title
-  const result = await editPage(pageId, storage, pageTitle, page.version + 1, page.space, message)
-  console.log(`Published to Confluence: version ${result.version.number}\n${page.tinyui}`)
+    const { pageId, storage, message, title, labels = [] } = params
+    const page = await getPage(pageId)
+    if (labels.length > 0) {
+        syncLabels(pageId, labels)
+    }
+    const pageTitle = title || page.title
+    const result = await editPage(pageId, storage, pageTitle, page.version + 1, page.space, message)
+    console.log(`Published to Confluence: version ${result.version.number}\n${page.tinyui}`)
 }
 
 async function mdToStorage(markdownPath: string, options: { title?: string }) {
@@ -64,7 +64,7 @@ function relativePaths(basePath: string, imagePaths: string[]): string[] {
         if (path.isAbsolute(imgPath)) {
             return imgPath
         }
-        return path.resolve(baseDir, imgPath)
+        return path.resolve(baseDir, decodeURIComponent(imgPath))
     })
 }
 

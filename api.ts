@@ -195,10 +195,7 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
   const api = `rest/api/content/${pageId}/child/attachment`
   const { confluenceToken: token } = await loadConfig()
 
-  const filename = filePath
-    .split('/')
-    .pop()
-    ?.replace(/[^a-zA-Z0-9.-]/g, '_') // Sanitize filename
+  const filename = encodeURIComponent(path.basename(filePath))
 
   const fileBuffer = await fs.readFile(filePath)
   const uint8Array = new Uint8Array(fileBuffer)
