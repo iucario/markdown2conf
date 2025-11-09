@@ -24,7 +24,7 @@ async function updateConfluencePage(params: UpdatePageParams) {
     const { pageId, storage, message, title, labels = [] } = params
     const page = await getPage(pageId)
     if (labels.length > 0) {
-        syncLabels(pageId, labels)
+        await syncLabels(pageId, labels)
     }
     const pageTitle = title || page.title
     const result = await editPage(pageId, storage, pageTitle, page.version + 1, page.space, message)
