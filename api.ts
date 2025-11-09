@@ -192,23 +192,34 @@ async function getAttachment(pageId: number): Promise<string[]> {
 }
 
 async function addAttachment(pageId: number, filePath: string, comment: string): Promise<any> {
-  const api = `rest/api/content/${pageId}/child/attachment`
-  const { confluenceToken: token } = await loadConfig()
-
-  const filename = filePath
-    .split('/')
-    .pop()
-    ?.replace(/[^a-zA-Z0-9.-]/g, '_') // Sanitize filename
-
+  const { confluenceToken: token, host } = await loadConfig()
+  const filename = path.basename(filePath)
   const fileBuffer = await fs.readFile(filePath)
   const uint8Array = new Uint8Array(fileBuffer)
   const blob = new Blob([uint8Array], { type: 'image/png' })
-
   const formData = new FormData()
   formData.append('comment', comment)
   formData.append('file', blob, filename)
+  formData.append('minorEdit', 'true')
 
-  const response = await fetch(api, {
+  const id = await getAttachmentByName(pageId, filename)
+  if (id !== null) {
+    console.log(`Attachment ${filename} already exists. Updating it...`)
+    const response = await fetch(`${host}/rest/api/content/${pageId}/child/attachment/${id}/data`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-Atlassian-Token': 'nocheck', // Attachment upload requires this header
+      },
+      body: formData,
+    })
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(`updating attachment "${filename}" on page ${pageId}: ${response.status} ${text}`)
+    }
+    return response.json()
+  }
+  const response = await fetch(`${host}/rest/api/content/${pageId}/child/attachment`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -218,9 +229,15 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
   })
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
+    throw new Error(`creating attachment "${filename}" on page ${pageId}: ${response.status} ${text}`)
   }
   return response.json()
+}
+
+async function getAttachmentByName(pageId: number, filename: string): Promise<number | null> {
+  const api = `rest/api/content/${pageId}/child/attachment?filename=${encodeURIComponent(filename)}`
+  const data = await request('GET', api)
+  return data.results[0]?.id || null
 }
 
 async function postLabels(pageId: number, labels: string[]): Promise<any> {
@@ -258,6 +275,7 @@ async function syncLabels(pageId: number, labels: string[]): Promise<void> {
     await deleteLabel(pageId, label)
   }
 }
+
 
 export {
   addAttachment,

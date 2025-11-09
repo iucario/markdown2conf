@@ -13,22 +13,22 @@ function inferPageId(srcFile: string): number {
 }
 
 interface UpdatePageParams {
-  pageId: number
-  storage: string
-  message: string
-  labels?: string[]
-  title?: string
+    pageId: number
+    storage: string
+    message: string
+    labels?: string[]
+    title?: string
 }
 
 async function updateConfluencePage(params: UpdatePageParams) {
-  const { pageId, storage, message, title, labels = [] } = params
-  const page = await getPage(pageId)
-  if (labels.length > 0) {
-    syncLabels(pageId, labels)
-  }
-  const pageTitle = title || page.title
-  const result = await editPage(pageId, storage, pageTitle, page.version + 1, page.space, message)
-  console.log(`Published to Confluence: version ${result.version.number}\n${page.tinyui}`)
+    const { pageId, storage, message, title, labels = [] } = params
+    const page = await getPage(pageId)
+    if (labels.length > 0) {
+        await syncLabels(pageId, labels)
+    }
+    const pageTitle = title || page.title
+    const result = await editPage(pageId, storage, pageTitle, page.version + 1, page.space, message)
+    console.log(`Published to Confluence: version ${result.version.number}\n${page.tinyui}`)
 }
 
 async function mdToStorage(markdownPath: string, options: { title?: string }) {
@@ -44,15 +44,20 @@ async function mdToStorage(markdownPath: string, options: { title?: string }) {
 }
 
 async function upploadImages(pageId: number, imagePaths: string[]): Promise<any[]> {
-    return imagePaths.map((imagePath) => {
-        console.log(`Uploading image: ${imagePath}`)
-        try {
-            return addAttachment(pageId, imagePath, 'Uploaded by mdconf')
-        } catch (error) {
-            console.error(`Failed to upload ${imagePath}: ${error.message}`)
-            return null
-        }
-    })
+    const results: any[] = []
+
+    for (const imagePath of imagePaths) {
+      console.info(`Uploading image: ${imagePath}`)
+      try {
+        const result = await addAttachment(pageId, imagePath, 'Uploaded by mdconf')
+        results.push(result)
+      } catch (error) {
+        console.error(`Failed to upload ${imagePath}: ${error.message}`)
+        results.push(null)
+      }
+    }
+
+    return results
 }
 
 function relativePaths(basePath: string, imagePaths: string[]): string[] {
@@ -64,7 +69,7 @@ function relativePaths(basePath: string, imagePaths: string[]): string[] {
         if (path.isAbsolute(imgPath)) {
             return imgPath
         }
-        return path.resolve(baseDir, imgPath)
+        return path.resolve(baseDir, decodeURIComponent(imgPath))
     })
 }
 

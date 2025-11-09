@@ -53,6 +53,13 @@ h5. heading 5`)
     expect(got.trim()).toBe(want)
   })
 
+   it('converts local images with URI encoded paths', async () => {
+     const md = '![alt text](./image%20name.png)\n![](https://example.org/image%20name.png)'
+     const { markup: got } = await convertToConfluence(md)
+     const want = '!image name.png|alt=alt text!\n!https://example.org/image%20name.png!'
+     expect(got.trim()).toBe(want)
+   })
+
   it('converts unordered lists', async () => {
     const md = '- item1\n- item2'
     const { markup: conf } = await convertToConfluence(md)

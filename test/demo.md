@@ -29,7 +29,7 @@ New line
 [#Test Lists](#test-lists)
 [#Heading-With Dash](#heading-with-dash)
 
-![Example Alt](./example.jpg)
+![Example Alt](./example%201.jpg)
 
 ## heading 2
 
