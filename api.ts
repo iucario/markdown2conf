@@ -215,7 +215,7 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
     })
     if (!response.ok) {
       const text = await response.text()
-      throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
+      throw new Error(`updating attachment "${filename}" on page ${pageId}: ${response.status} ${text}`)
     }
     return response.json()
   }
@@ -229,7 +229,7 @@ async function addAttachment(pageId: number, filePath: string, comment: string):
   })
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Request failed ${pageId}: ${response.status} ${text}`)
+    throw new Error(`creating attachment "${filename}" on page ${pageId}: ${response.status} ${text}`)
   }
   return response.json()
 }

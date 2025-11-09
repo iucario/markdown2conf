@@ -44,15 +44,20 @@ async function mdToStorage(markdownPath: string, options: { title?: string }) {
 }
 
 async function upploadImages(pageId: number, imagePaths: string[]): Promise<any[]> {
-    return imagePaths.map((imagePath) => {
-        console.log(`Uploading image: ${imagePath}`)
-        try {
-            return addAttachment(pageId, imagePath, 'Uploaded by mdconf')
-        } catch (error) {
-            console.error(`Failed to upload ${imagePath}: ${error.message}`)
-            return null
-        }
-    })
+    const results: any[] = []
+
+    for (const imagePath of imagePaths) {
+      console.info(`Uploading image: ${imagePath}`)
+      try {
+        const result = await addAttachment(pageId, imagePath, 'Uploaded by mdconf')
+        results.push(result)
+      } catch (error) {
+        console.error(`Failed to upload ${imagePath}: ${error.message}`)
+        results.push(null)
+      }
+    }
+
+    return results
 }
 
 function relativePaths(basePath: string, imagePaths: string[]): string[] {
