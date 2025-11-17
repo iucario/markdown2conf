@@ -22,17 +22,19 @@ Image. Supports uploading attachments
 
 ## Installation
 
-Install packages
+Install from npm:
 
 ```sh
-pnpm install
+npm i -g markdown2conf
+mdconf -V
 ```
 
-Optionally install executable globally as `mdconf`
+Install from source code:
 
 ```sh
 pnpm build
 pnpm link --global
+mdconf -V
 ```
 
 ## Usage
@@ -49,7 +51,7 @@ Create a config file at `~/.config/mdconf.json`
 ### Convert Markdown to Confluence markup
 
 ```sh
-pnpm dev test/demo.md <output>
+mdconf test/demo.md <output>
 ```
 
 If `output` is provided, saves the result to a file. Otherwise, prints to stdout.
@@ -57,7 +59,7 @@ If `output` is provided, saves the result to a file. Otherwise, prints to stdout
 ### Extract frontmatter (title, labels)
 
 ```sh
-pnpm dev frontmatter test/demo.md
+mdconf frontmatter test/demo.md
 ```
 
 ```json
@@ -86,7 +88,7 @@ mdconf publish markdown.md -i <id> -m 'message'
 ### Help
 
 ```sh
-pnpm dev --help
+mdconf --help
 ```
 
 ```text
@@ -96,17 +98,17 @@ Usage: mdconf [options] [command] <input.md> [output.confluence]
 Markdown to Confluence Wiki Markup Converter
 
 Arguments:
-  input.md                         Markdown input file
-  output.confluence                Output file (optional)
+  input.md                             Markdown input file
+  output.confluence                    Output file (optional)
 
 Options:
-  -V, --version                    output the version number
-  -h, --help                       display help for command
+  -V, --version                        output the version number
+  -h, --help                           display help for command
 
 Commands:
-  frontmatter <input.md>           Extract frontmatter (title, labels)
-  publish [options] <markdown.md>  Convert markdown/markup to storage format and publish to Confluence page
-  new [options] <markdown.md>      Create a new Confluence page from markdown with frontmatter
+  frontmatter <input.md>               Extract frontmatter (id, title, labels)
+  publish|pub [options] <markdown.md>  Convert markdown/markup to storage format and publish to Confluence page
+  new [options] <markdown.md>          Create a new Confluence page from markdown with frontmatter
 ```
 
 ## Example
