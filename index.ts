@@ -5,7 +5,7 @@ import { createPage, homePage, markupToStorage, syncLabels } from './api.js'
 import { convertToConfluence, extractFrontMatter } from './convert.js'
 import { inferPageId, mdToStorage, relativePaths, updateConfluencePage, upploadImages } from './main.js'
 
-const VERSION = '1.4.12-rc.1'
+const VERSION = '1.4.13-rc.1'
 
 async function main() {
   const program = new Command()
@@ -76,7 +76,7 @@ async function main() {
             await updateConfluencePage({ pageId: pageIdNum, storage, message, labels, title: newTitle })
             if (options.attachment && localImages.length > 0) {
               const relativeImagePaths = relativePaths(filePath, localImages)
-              upploadImages(pageIdNum, relativeImagePaths)
+              await upploadImages(pageIdNum, relativeImagePaths)
             }
           }
         } catch (error) {
@@ -105,11 +105,11 @@ async function main() {
         console.log(`Created new Confluence page:\n${result._links.base + result._links.tinyui}`)
         if (localImages.length > 0) {
           const relativeImagePaths = relativePaths(filePath, localImages)
-          upploadImages(result.id, relativeImagePaths)
+          await upploadImages(result.id, relativeImagePaths)
         }
         const attrs = await extractFrontMatter(await fs.readFile(filePath, 'utf-8'))
         if (attrs.labels && attrs.labels.length > 0) {
-          syncLabels(result.id, attrs.labels)
+          await syncLabels(result.id, attrs.labels)
         }
       } catch (error) {
         console.error(`${error.message}`)

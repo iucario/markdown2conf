@@ -217,8 +217,9 @@ const confluenceRenderer = {
     let src = href
     const isUrl = /^https?:\/\//.test(href)
     if (!isUrl) {
-      src = src.split('/').pop().split('?')[0]
-      localImages.push(href)
+      // For local images, decode URL encoding and get just the filename for Confluence display
+      src = decodeURIComponent(src.split('/').pop().split('?')[0])
+      localImages.push(href) // Keep original href for file path resolution
     }
     if (text && text.trim()) {
       return `!${src}|alt=${text.trim()}!`
