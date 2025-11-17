@@ -75,7 +75,7 @@ Table
 |cell A1|cell A2|cell A3|
 |cell B1|cell B2|cell B3|
 
-| Feature | Pros | Cons |
+|  | Pros | Cons |
 |---|---|---|
 | Markdown | __Simple__ | *Limited features*  |
 | Confluence | Rich `formatting` ~~Tables~~ Macros | Proprietary Complex |

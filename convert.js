@@ -125,7 +125,9 @@ const confluenceRenderer = {
     result += '||'
     for (const cell of header) {
       const text = this.parser.parseInline(cell.tokens)
-      result += `${text}||`
+      // Add space for empty cells to avoid consecutive pipes
+      const cellContent = text.trim() === '' ? ' ' : text
+      result += `${cellContent}||`
     }
     result += '\n'
 
@@ -134,7 +136,8 @@ const confluenceRenderer = {
       result += '|'
       for (const cell of row) {
         const text = this.parser.parseInline(cell.tokens)
-        result += `${text}|`
+        const cellContent = text.trim() === '' ? ' ' : text
+        result += `${cellContent}|`
       }
       result += '\n'
     }

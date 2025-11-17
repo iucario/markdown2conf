@@ -14,7 +14,6 @@ describe('Basic Confluence Markup', () => {
     expect(conf.trim()).toBe('_italic_')
   })
 
-
   it('converts headings', async () => {
     const md = '# Heading 1\n## Heading 2'
     const { markup: conf } = await convertToConfluence(md)
@@ -53,12 +52,12 @@ h5. heading 5`)
     expect(got.trim()).toBe(want)
   })
 
-   it('converts local images with URI encoded paths', async () => {
-     const md = '![alt text](./image%20name.png)\n![](https://example.org/image%20name.png)'
-     const { markup: got } = await convertToConfluence(md)
-     const want = '!image name.png|alt=alt text!\n!https://example.org/image%20name.png!'
-     expect(got.trim()).toBe(want)
-   })
+  it('converts local images with URI encoded paths', async () => {
+    const md = '![alt text](./image%20name.png)\n![](https://example.org/image%20name.png)'
+    const { markup: got } = await convertToConfluence(md)
+    const want = '!image name.png|alt=alt text!\n!https://example.org/image%20name.png!'
+    expect(got.trim()).toBe(want)
+  })
 
   it('converts unordered lists', async () => {
     const md = '- item1\n- item2'
@@ -109,6 +108,15 @@ h5. heading 5`)
 | Cell 3   | Cell 4   |`
     const { markup: conf } = await convertToConfluence(md)
     expect(conf).toBe('||Header 1||Header 2||\n' + '|Cell 1|Cell 2|\n' + '|Cell 3|Cell 4|\n\n')
+  })
+
+  it('converts tables with empty cell', async () => {
+    const md = `|| Header 2 |
+|---|---|
+| Cell 1   | Cell 2   |
+| Cell 3   ||`
+    const { markup: conf } = await convertToConfluence(md)
+    expect(conf).toBe('|| ||Header 2||\n' + '|Cell 1|Cell 2|\n' + '|Cell 3| |\n\n')
   })
 
   it('converts callouts', async () => {
