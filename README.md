@@ -20,6 +20,27 @@ Mermaid. Using HTML and mermaid.js
 
 Image. Supports uploading attachments
 
+### Code Block Attributes
+
+Code blocks support extended attributes for Confluence code macro customization:
+
+```markdown
+~~~java {theme="Eclipse" title="MyClass.java" linenumbers="true" firstline="001" collapse="false"}
+public class MyClass {
+    public static void main(String[] args) {
+        System.out.println("Hello World");
+    }
+}
+~~~
+```
+
+Supported attributes:
+- `theme` - Code block theme (e.g., "Eclipse", "Midnight", "DJango", "Emacs", "FadeToGrey", "RDark")
+- `title` - Title displayed above the code block
+- `linenumbers` - Show line numbers ("true" or "false")
+- `firstline` - Starting line number (e.g., "001")
+- `collapse` - Whether the code block is collapsed by default ("true" or "false")
+
 ## Installation
 
 Install from npm:

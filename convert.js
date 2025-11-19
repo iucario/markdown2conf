@@ -74,6 +74,19 @@ const confluenceRenderer = {
   },
 
   code({ text, lang }) {
+    let attributes = {}
+
+    const attrMatch = lang.match(/^(\w+)?\s*\{([^}]+)\}$/) || lang.match(/^(\w+)?\s+(.+)$/)
+    if (attrMatch) {
+      lang = attrMatch[1] || ''
+      const attrString = attrMatch[2]
+      const attrRegex = /(\w+)=["']([^"']+)["']/g
+      let match
+      while ((match = attrRegex.exec(attrString)) !== null) {
+        attributes[match[1]] = match[2]
+      }
+    }
+
     const confluenceLang = codeLangMap[lang] || 'none'
 
     switch (confluenceLang) {
@@ -89,7 +102,12 @@ const confluenceRenderer = {
         return `{plantuml}\n${text}\n{plantuml}\n\n`
 
       default:
-        return `{code:lang=${confluenceLang}}\n${text}\n{code}\n\n`
+        const allowedParams = ['title', 'theme', 'linenumbers', 'firstline', 'collapse']
+        const macroParams = allowedParams
+          .filter(key => attributes[key])
+          .map(key => `${key}=${attributes[key]}`)
+        macroParams.unshift(`lang=${confluenceLang}`)
+        return `{code:${macroParams.join('|')}}\n${text}\n{code}\n\n`
     }
   },
 
