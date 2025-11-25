@@ -181,7 +181,7 @@ const confluenceRenderer = {
     return `{{${escaped}}}`
   },
 
-  link({ href, title, tokens }) {
+  link({ href, tokens }) {
     // Check if it's an image
     if (tokens && tokens[0]?.type === 'image') {
       return this.image({
@@ -215,7 +215,7 @@ const confluenceRenderer = {
     return `[${text}|${href}]`
   },
 
-  image({ href, title, text }) {
+  image({ href, text }) {
     // Only collect local image paths for upload
     let src = href
     const isUrl = /^https?:\/\//.test(href)

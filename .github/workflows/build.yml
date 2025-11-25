@@ -21,3 +21,6 @@ jobs:
 
       - name: Prettier check
         run: pnpm run fmtcheck
+
+      - name: Lint
+        run: pnpm lint
