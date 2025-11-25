@@ -30,5 +30,4 @@ const codeLangMap = {
   mermaid: 'mermaid',
 }
 
-
 export default codeLangMap
