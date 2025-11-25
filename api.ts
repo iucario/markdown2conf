@@ -276,7 +276,6 @@ async function syncLabels(pageId: number, labels: string[]): Promise<void> {
   }
 }
 
-
 export {
   addAttachment,
   createPage,

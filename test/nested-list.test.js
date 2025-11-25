@@ -19,7 +19,7 @@ describe('Nested lists', () => {
   it('should convert nested ordered lists', async () => {
     const md = `1. Item 1\n   1. Subitem 1\n   1. Subitem 2\n2. Item 2`
     const want = `# Item 1\n## Subitem 1\n## Subitem 2\n# Item 2\n`
-  const { markup: got } = await convertToConfluence(md)
+    const { markup: got } = await convertToConfluence(md)
     expect(got.trim()).toBe(want.trim())
   })
 

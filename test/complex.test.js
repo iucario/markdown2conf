@@ -114,7 +114,7 @@ It has multiple lines.
 ||Header 1||Header 2||
 |Cell 1|Cell 2|
 |Cell 3|Cell 4|`
-  const { markup: got } = await convertToConfluence(md)
-  expect(got.trim()).toBe(want.trim())
+    const { markup: got } = await convertToConfluence(md)
+    expect(got.trim()).toBe(want.trim())
   })
 })
