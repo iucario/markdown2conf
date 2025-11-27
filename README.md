@@ -22,7 +22,7 @@ Image. Supports uploading attachments
 
 ### Code Block Attributes
 
-Code blocks support extended attributes in curly braces for Confluence customization: theme, title, linenumbers, firstline, and collapse. Each attribute should be separated by a `,`.
+Code blocks support extended attributes in curly braces for Confluence customization: theme, title, linenumbers, firstline, and collapse. Each attribute should be separated by a `,` and the value should be quoted.
 
 ```markdown
 ~~~java {theme="Eclipse",title="MyClass.java",linenumbers="true",firstline="001",collapse="false"}

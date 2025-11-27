@@ -74,8 +74,7 @@ const confluenceRenderer = {
   },
 
   code({ text, lang }) {
-    const { lang: language, attributes } = convertToCodeMacro(lang)
-    const confluenceLang = codeLangMap[language] || 'none'
+    const { confluenceLang, macroParams } = convertToCodeMacro(lang)
 
     switch (confluenceLang) {
       case 'mermaid':
@@ -90,12 +89,7 @@ const confluenceRenderer = {
         return `{plantuml}\n${text}\n{plantuml}\n\n`
 
       default:
-        const allowedParams = ['title', 'theme', 'linenumbers', 'firstline', 'collapse']
-        const macroParams = allowedParams
-          .filter(key => attributes[key])
-          .map(key => `${key}=${attributes[key]}`)
-        macroParams.unshift(`lang=${confluenceLang}`)
-        return `{code:${macroParams.join('|')}}\n${text}\n{code}\n\n`
+        return `{code:${macroParams}}\n${text}\n{code}\n\n`
     }
   },
 
@@ -298,25 +292,26 @@ async function extractFrontMatter(markdown) {
 }
 
 /**
- * 
- * @param {string} lang 
- * @returns {{language: string, attributes: object}}
+ *
+ * @param {string} langStr
+ * @returns {{confluenceLang: string, macroParams: string}}
  */
-function convertToCodeMacro(lang) {
-  const attrMatch = lang.match(/^(\w+)?\s*\{([^}]+)\}/)
-  const attributes = {}
+function convertToCodeMacro(langStr) {
+  const allowedParams = ['title', 'theme', 'linenumbers', 'firstline', 'collapse']
+  const attrMatch = langStr.match(/^(\w+)?\s*\{([^}]+)\}/)
+  const language = attrMatch ? attrMatch[1] || '' : langStr.match(/^(\w+)/)?.[1] || ''
+  const confluenceLang = codeLangMap[language] || 'none'
 
-  if (!attrMatch) {
-    const language = lang.match(/^(\w+)/)?.[1] || ''
-    return { lang: language, attributes }
+  const params = [`lang=${confluenceLang}`]
+  if (attrMatch) {
+    attrMatch[2].split(',').forEach((attr) => {
+      const match = attr.trim().match(/^(\w+)=["']([^"']+)["']$/)
+      if (match && allowedParams.includes(match[1])) {
+        params.push(`${match[1]}=${match[2]}`)
+      }
+    })
   }
-
-  const language = attrMatch[1] || ''
-  for (const attr of attrMatch[2].split(',')) {
-    const match = attr.trim().match(/^(\w+)=["']([^"']+)["']$/)
-    if (match) attributes[match[1]] = match[2]
-  }
-  return { lang: language, attributes }
+  return { confluenceLang, macroParams: params.join('|') }
 }
 
 export { convertToConfluence, convertToCodeMacro, confluenceRenderer, extractFrontMatter }
