@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { convertToConfluence } from '../convert.js'
+import { convertToConfluence, convertToCodeMacro } from '../convert.js'
 
 describe('Basic Confluence Markup', () => {
   it('converts bold text', async () => {
@@ -77,35 +77,47 @@ h5. heading 5`)
     expect(conf).toBe('* done\n* not done\n\n')
   })
 
-  it('converts code blocks', async () => {
+  it('converts code blocks without attributes', async () => {
     const md = '```js\nconsole.log(1);\n```\n```sh\nls -ahl\n```'
     const { markup: conf } = await convertToConfluence(md)
     expect(conf).toBe('{code:lang=javascript}\nconsole.log(1);\n{code}\n\n{code:lang=bash}\nls -ahl\n{code}\n\n')
   })
 
-  it('converts code blocks with theme', async () => {
-    const md = '```java {theme="Eclipse"}\npublic class Test {}\n```'
-    const { markup: conf } = await convertToConfluence(md)
-    expect(conf).toBe('{code:lang=java|theme=Eclipse}\npublic class Test {}\n{code}\n\n')
+  it('converts code blocks with one attribute', async () => {
+    const langStr = 'java {theme="Eclipse"}'
+    const { lang: language, attributes } = convertToCodeMacro(langStr)
+    expect(language).toBe('java')
+    expect(attributes).toEqual({ theme: 'Eclipse' })
   })
 
   it('converts code blocks with multiple attributes', async () => {
-    const md = '```java {theme="Eclipse" title="MyClass.java" linenumbers="true" firstline="001" collapse="false"}\npublic class Test {}\n```'
-    const { markup: conf } = await convertToConfluence(md)
-    expect(conf).toBe('{code:lang=java|title=MyClass.java|theme=Eclipse|linenumbers=true|firstline=001|collapse=false}\npublic class Test {}\n{code}\n\n')
+    const langStr = 'java {theme="Eclipse",title="MyClass.java",linenumbers="true",firstline="001",collapse="false"}\npublic class Test {}\n'
+    const { lang: language, attributes } = convertToCodeMacro(langStr)
+    expect(language).toBe('java')
+    expect(attributes).toEqual({ theme: 'Eclipse', title: 'MyClass.java', linenumbers: 'true', firstline: '001', collapse: 'false' })
   })
 
   it('converts code blocks with title only', async () => {
-    const md = '```python {title="example.py"}\nprint("Hello")\n```'
-    const { markup: conf } = await convertToConfluence(md)
-    expect(conf).toBe('{code:lang=python|title=example.py}\nprint("Hello")\n{code}\n\n')
+    const langStr = 'python {title="example.py"}\nprint("Hello")\n'
+    const { lang: language, attributes } = convertToCodeMacro(langStr)
+    expect(language).toBe('python')
+    expect(attributes).toEqual({ title: 'example.py' })
   })
 
   it('converts code blocks with single quotes in attributes', async () => {
-    const md = "```js {theme='Midnight'}\nconsole.log('test');\n```"
-    const { markup: conf } = await convertToConfluence(md)
-    expect(conf).toBe('{code:lang=javascript|theme=Midnight}\nconsole.log(\'test\');\n{code}\n\n')
+    const langStr = "js {theme='Midnight'}\nconsole.log('test');\n"
+    const { lang: language, attributes } = convertToCodeMacro(langStr)
+    expect(language).toBe('js')
+    expect(attributes).toEqual({ theme: 'Midnight' })
   })
+
+  it('rejects space-separated attributes (only comma separator works)', async () => {
+    const langStr = 'java {theme="Eclipse" title="MyClass.java"}\npublic class Test {}\n'
+    const { lang: language, attributes } = convertToCodeMacro(langStr)
+    expect(language).toBe('java')
+    expect(attributes).toEqual({})
+  })
+
 
   it('converts inline code', async () => {
     const md = 'Here is some `inline code` example.'

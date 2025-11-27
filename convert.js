@@ -74,20 +74,8 @@ const confluenceRenderer = {
   },
 
   code({ text, lang }) {
-    let attributes = {}
-
-    const attrMatch = lang.match(/^(\w+)?\s*\{([^}]+)\}$/) || lang.match(/^(\w+)?\s+(.+)$/)
-    if (attrMatch) {
-      lang = attrMatch[1] || ''
-      const attrString = attrMatch[2]
-      const attrRegex = /(\w+)=["']([^"']+)["']/g
-      let match
-      while ((match = attrRegex.exec(attrString)) !== null) {
-        attributes[match[1]] = match[2]
-      }
-    }
-
-    const confluenceLang = codeLangMap[lang] || 'none'
+    const { lang: language, attributes } = convertToCodeMacro(lang)
+    const confluenceLang = codeLangMap[language] || 'none'
 
     switch (confluenceLang) {
       case 'mermaid':
@@ -309,4 +297,26 @@ async function extractFrontMatter(markdown) {
   }
 }
 
-export { convertToConfluence, confluenceRenderer, extractFrontMatter }
+/**
+ * 
+ * @param {string} lang 
+ * @returns {{language: string, attributes: object}}
+ */
+function convertToCodeMacro(lang) {
+  const attrMatch = lang.match(/^(\w+)?\s*\{([^}]+)\}/)
+  const attributes = {}
+
+  if (!attrMatch) {
+    const language = lang.match(/^(\w+)/)?.[1] || ''
+    return { lang: language, attributes }
+  }
+
+  const language = attrMatch[1] || ''
+  for (const attr of attrMatch[2].split(',')) {
+    const match = attr.trim().match(/^(\w+)=["']([^"']+)["']$/)
+    if (match) attributes[match[1]] = match[2]
+  }
+  return { lang: language, attributes }
+}
+
+export { convertToConfluence, convertToCodeMacro, confluenceRenderer, extractFrontMatter }
