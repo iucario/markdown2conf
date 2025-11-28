@@ -107,7 +107,7 @@ h5. heading 5`)
   })
 
   it('converts code blocks with title only', async () => {
-    const langStr = 'python {title="example.py"}\nprint("Hello")\n'
+    const langStr = 'python {title =  "example.py"}\nprint("Hello")\n'
     const { confluenceLang, macroParams } = convertToCodeMacro(langStr)
     expect(confluenceLang).toBe('python')
     expect(macroParams).toBe('lang=python|title=example.py')
@@ -126,7 +126,6 @@ h5. heading 5`)
     expect(confluenceLang).toBe('java')
     expect(macroParams).toBe('lang=java')
   })
-
 
   it('converts inline code', async () => {
     const md = 'Here is some `inline code` example.'

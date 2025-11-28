@@ -305,7 +305,7 @@ function convertToCodeMacro(langStr) {
   const params = [`lang=${confluenceLang}`]
   if (attrMatch) {
     attrMatch[2].split(',').forEach((attr) => {
-      const match = attr.trim().match(/^(\w+)=["']([^"']+)["']$/)
+      const match = attr.trim().match(/^(\w+)\s*=\s*["']([^"']+)["']$/)
       if (match && allowedParams.includes(match[1])) {
         params.push(`${match[1]}=${match[2]}`)
       }
