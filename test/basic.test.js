@@ -127,7 +127,6 @@ h5. heading 5`)
     expect(macroParams).toBe('lang=java')
   })
 
-
   it('converts inline code', async () => {
     const md = 'Here is some `inline code` example.'
     const { markup: conf } = await convertToConfluence(md)

@@ -20,17 +20,10 @@ Mermaid. Using HTML and mermaid.js
 
 Image. Supports uploading attachments
 
-### Code Block Attributes
-
-Code blocks support extended attributes in curly braces for Confluence customization: theme, title, linenumbers, firstline, and collapse. Each attribute should be separated by a `,` and the value should be quoted.
+Code Macro Parameters. Supports extended attributes in curly braces for Confluence customization: theme, title, linenumbers, firstline, and collapse. Each attribute should be separated by a `,` and the value should be quoted.
 
 ```markdown
-~~~java {theme="Eclipse",title="MyClass.java",linenumbers="true",firstline="001",collapse="false"}
-public class MyClass {
-    public static void main(String[] args) {
-        System.out.println("Hello World");
-    }
-}
+~~~sh {theme="Eclipse",title="test.sh",linenumbers="true",firstline="001",collapse="false"}
 ~~~
 ```
 
