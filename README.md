@@ -82,8 +82,24 @@ mdconf new input.md -s '~your.name' -t 'title'
 ### Publish Page
 
 ```sh
-mdconf publish markdown.md -i <id> -m 'message'
+mdconf pub markdown.md -i <id> -m 'message'
 ```
+
+If the id has been set in the frontmatter, for example:
+
+```yaml
+---
+title: 'Page Title'
+labels:
+  - markdown
+  - confluence
+  - typescript
+  - TypeScript
+id: 99999999999
+---
+```
+
+You can simply run `mdconf pub markdown.md` to update it.
 
 ### Help
 
@@ -121,6 +137,7 @@ title: My Page
 labels:
   - docs
   - confluence
+id: 1234567890
 ---
 
 # Welcome
