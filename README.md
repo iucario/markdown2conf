@@ -39,12 +39,13 @@ mdconf -V
 
 ## Usage
 
-Create a config file at `~/.config/mdconf.json`
+Create a config file at `~/.config/mdconf.json`\
+`host` is the homepage of your Confluence.
 
 ```json
 {
   "confluenceToken": "abcdef",
-  "host": "http://localhost"
+  "host": "https://localhost/confluence"
 }
 ```
 
@@ -55,21 +56,6 @@ mdconf test/demo.md <output>
 ```
 
 If `output` is provided, saves the result to a file. Otherwise, prints to stdout.
-
-### Extract frontmatter (title, labels)
-
-```sh
-mdconf frontmatter test/demo.md
-```
-
-```json
-{
-  "title": "Page Title",
-  "labels": [ "test", "markdown", "confluence", "typescript" ]
-}
-```
-
-Prints the parsed frontmatter as a JSON object.
 
 ### Create New Page
 
@@ -85,7 +71,7 @@ mdconf new input.md -s '~your.name' -t 'title'
 mdconf pub markdown.md -i <id> -m 'message'
 ```
 
-If the id has been set in the frontmatter, for example:
+If the page id is set in the frontmatter, for example:
 
 ```yaml
 ---
@@ -102,10 +88,6 @@ id: 99999999999
 You can simply run `mdconf pub markdown.md` to update it.
 
 ### Help
-
-```sh
-mdconf --help
-```
 
 ```text
 mdconf -h
