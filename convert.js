@@ -74,7 +74,7 @@ const confluenceRenderer = {
   },
 
   code({ text, lang }) {
-    const confluenceLang = codeLangMap[lang] || 'none'
+    const { confluenceLang, macroParams } = convertToCodeMacro(lang)
 
     switch (confluenceLang) {
       case 'mermaid':
@@ -89,7 +89,7 @@ const confluenceRenderer = {
         return `{plantuml}\n${text}\n{plantuml}\n\n`
 
       default:
-        return `{code:lang=${confluenceLang}}\n${text}\n{code}\n\n`
+        return `{code:${macroParams}}\n${text}\n{code}\n\n`
     }
   },
 
@@ -291,4 +291,27 @@ async function extractFrontMatter(markdown) {
   }
 }
 
-export { convertToConfluence, confluenceRenderer, extractFrontMatter }
+/**
+ *
+ * @param {string} langStr
+ * @returns {{confluenceLang: string, macroParams: string}}
+ */
+function convertToCodeMacro(langStr) {
+  const allowedParams = ['title', 'theme', 'linenumbers', 'firstline', 'collapse']
+  const attrMatch = langStr.match(/^(\w+)?\s*\{([^}]+)\}/)
+  const language = attrMatch ? attrMatch[1] || '' : langStr.match(/^(\w+)/)?.[1] || ''
+  const confluenceLang = codeLangMap[language] || 'none'
+
+  const params = [`lang=${confluenceLang}`]
+  if (attrMatch) {
+    attrMatch[2].split(',').forEach((attr) => {
+      const match = attr.trim().match(/^(\w+)\s*=\s*["']([^"']+)["']$/)
+      if (match && allowedParams.includes(match[1])) {
+        params.push(`${match[1]}=${match[2]}`)
+      }
+    })
+  }
+  return { confluenceLang, macroParams: params.join('|') }
+}
+
+export { convertToConfluence, convertToCodeMacro, confluenceRenderer, extractFrontMatter }
