@@ -20,6 +20,13 @@ Mermaid. Using HTML and mermaid.js
 
 Image. Supports uploading attachments
 
+Code Macro Parameters. Supports extended attributes in curly braces for Confluence customization: theme, title, linenumbers, firstline, and collapse. Each attribute should be separated by a `,` and the value should be quoted.
+
+```markdown
+~~~sh {theme="Eclipse",title="test.sh",linenumbers="true",firstline="001",collapse="false"}
+~~~
+```
+
 ## Installation
 
 Install from npm:
