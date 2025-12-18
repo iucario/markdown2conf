@@ -87,7 +87,6 @@ labels:
   - markdown
   - confluence
   - typescript
-  - TypeScript
 id: 99999999999
 ---
 ```
